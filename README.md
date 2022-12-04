@@ -1,24 +1,35 @@
 # nthu-badminton-book
 
-1. Set sessions to book in `settings.json`
+## How it works?
+
+Read settings 
+-> 
+Wait until tomorrow 0:00 a.m. 
+-> 
+Book sessions on latest available day of the week, e.g., Book Thursday's sessions on Sunday 0:00 a.m.
+
+## Usage
+
+1. Config ID, password and sessions to book in `settings.json`.
 
 ```json=
 {
-    "sessions": [
-        "18:00",
-        "19:00"
-    ]
+    "id": "108067414",
+    "password": "password",
+    "sessions": {
+        "Sunday": [],
+        "Monday": [],
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [
+            "20:00",
+            "21:00"
+        ],
+        "Friday": [],
+        "Saturday": []
+    }
 }
 ```
+> Note: Each ID can book at most two sessions each day of the week
 
-2. `start chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\selenum\ChromeProfile"`
-
-3. login with the chrome driver opened in step 2.
-
-![](https://i.imgur.com/T4M3FQd.png)
-
-4. Make you see the following page, and this page is on the first tab
-
-![](https://i.imgur.com/D0sIdns.png)
-
-5. `python book.py`
+2. `python book.py`
