@@ -11,6 +11,7 @@ import re
 import datetime
 import time
 import sys
+import random
 
 #              value pattern: [court index 0~7][session index 0~15]
 #  7:00~ 8:00  00-70
@@ -92,6 +93,7 @@ driver = webdriver.Chrome(chrome_driver, chrome_options=chrome_options)
 driver.get("https://nthualb.url.tw/reservation/reservation")
 
 # click on 校務資訊系統登入
+# <button class="btn btn-primary special_login" style="display: block;margin: auto;">校務資訊系統登入</button>
 driver.find_element_by_css_selector('.btn.btn-primary.special_login').click()
 
 # switch focus to next tab
@@ -121,7 +123,9 @@ driver.refresh()
 driver.get("https://nthualb.url.tw/reservation/reservation?d=4")
 
 while res:
+    # <div class="mybtn" value="76" id="reservation_available">預約</div>
     elements = driver.find_elements_by_class_name("mybtn")
+    random.shuffle(elements)
     find_elems_again = False
     for element in elements:
         if find_elems_again:
