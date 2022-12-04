@@ -13,6 +13,22 @@ import time
 import sys
 import random
 
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter(
+    '[%(asctime)s %(levelname)-8s] %(message)s', datefmt='%Y%m%d %H:%M:%S')
+
+# log to file
+fh = logging.FileHandler('log.txt', encoding='utf-8', mode='w')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+# also log to console
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 #              value pattern: [court index 0~7][session index 0~15]
 #  7:00~ 8:00  00-70
 #  8:00~ 9:00  01-71
@@ -52,10 +68,10 @@ with open('settings.json', 'r', encoding="utf-8") as fp:
     settings = json.load(fp)
 
 sessions = settings["sessions"][day_of_the_week_to_book]
-print("Booking {}'s sessions".format(day_of_the_week_to_book))
-print(sessions)
+logging.info("Booking {}'s sessions: {}".format(
+    day_of_the_week_to_book, sessions))
 if not sessions:
-    print("sessions is empty, exit")
+    logging.info("sessions is empty, exiting...")
     sys.exit()
 
 # convert selected sessions to re to match
@@ -74,9 +90,9 @@ def wait_until_midnight():
 
     delta = midnight - now
 
-    print("Current time : " + time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("Sleep for " + str(delta.seconds) + " seconds..."
-          "do not close this window and the web driver.")
+    logging.info("Current time : " + time.strftime("%Y-%m-%d %H:%M:%S"))
+    logging.info("Sleep for " + str(delta.seconds) + " seconds..."
+                 "do not close this window and the web driver.")
     time.sleep(delta.seconds)
 
 
@@ -133,15 +149,15 @@ while res:
         value = element.get_attribute("value")
         for re in res:
             if re.match(value):
-                print('match')
+                logging.info('Match')
                 element.click()
                 try:
                     WebDriverWait(driver, 5).until(EC.alert_is_present())
                     alert = driver.switch_to_alert()
-                    print(alert.text)
+                    logging.info(alert.text)
                     alert.accept()
                 except TimeoutException:
-                    print('timeout :(')
+                    logging.error('timeout :(')
                     find_elems_again = True
                     break
 
@@ -150,19 +166,19 @@ while res:
                     alert = driver.switch_to_alert()
                     text = alert.text
                     alert.accept()
-                    print(text)
+                    logging.info(text)
                     if text == "預約成功":
                         res.remove(re)
                     elif text == "預約失敗，已達當日預約上限":
                         res.clear()
 
                 except TimeoutException:
-                    print('timeout :(')
+                    logging.error('timeout :(')
 
                 finally:
                     find_elems_again = True
                     break
     if find_elems_again:
         continue
-    print('no match')
+    logging.info('No match')
     res.clear()
