@@ -57,12 +57,41 @@ def wait_until_midnight():
     time.sleep(delta.seconds)
 
 
-# https://cosmocode.io/how-to-connect-selenium-to-an-existing-browser-that-was-opened-manually/
 chrome_options = Options()
-chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+# We fill the captcha using https://chrome.google.com/webstore/detail/nthu-oauth-decaptcha/mflpajkffpiibelpmffonolenndbgogp
+# github:
+#   https://github.com/justin0u0/NTHU-OAuth-Decaptcha
+# Get .crx of chrome extension:
+#   https://crxextractor.com/
+chrome_options.add_extension("extension_1_2_0_0.crx")
 
 chrome_driver = "chromedriver.exe"
 driver = webdriver.Chrome(chrome_driver, chrome_options=chrome_options)
+driver.get("https://nthualb.url.tw/reservation/reservation")
+
+# click on 校務資訊系統登入
+driver.find_element_by_css_selector('.btn.btn-primary.special_login').click()
+
+# switch focus to next tab
+# https://www.browserstack.com/guide/how-to-switch-tabs-in-selenium-python
+p = driver.current_window_handle
+chwd = driver.window_handles
+for w in chwd:
+    # switch focus to child window
+    if(w != p):
+        driver.switch_to.window(w)
+
+driver.find_element_by_name("id").send_keys(settings['id'])
+driver.find_element_by_name("password").send_keys(settings['password'])
+
+# wait for captcha to be filled
+# TODO(heyfey): error handling of timeout or incorrect value
+WebDriverWait(driver, 10).until(
+    lambda x: x.find_element_by_name("captcha").get_attribute("value"))
+
+# click on 登入
+driver.find_element_by_name("action").click()
+
 
 wait_until_midnight()
 time.sleep(0.1)
