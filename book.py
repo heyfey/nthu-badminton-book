@@ -10,6 +10,7 @@ import json
 import re
 import datetime
 import time
+import sys
 
 #              value pattern: [court index 0~7][session index 0~15]
 #  7:00~ 8:00  00-70
@@ -28,18 +29,39 @@ import time
 # 20:00~21:00
 # 21:00~22:00
 # 22:00~23:00  015-715
-sessions = ["7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00",
-            "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"]
+sessions_available = ["7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00",
+                      "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"]
+
+# If today is Saturday -> wait for Sunday 0:00 a.m. -> book Thursday's sessions
+day_of_the_week_to_book_map = {
+    0: "Saturday",
+    1: "Sunday",
+    2: "Monday",
+    3: "Tuesday",
+    4: "Wednesday",
+    5: "Thursday",
+    6: "Friday",
+}
+# datetime.datetime.today().weekday() returns 0 on Monday, 6 on Sunday
+day_of_the_week_to_book = day_of_the_week_to_book_map[
+    datetime.datetime.today().weekday()
+]
 
 with open('settings.json', 'r', encoding="utf-8") as fp:
     settings = json.load(fp)
 
-print(settings['sessions'])
+sessions = settings["sessions"][day_of_the_week_to_book]
+print("Booking {}'s sessions".format(day_of_the_week_to_book))
+print(sessions)
+if not sessions:
+    print("sessions is empty, exit")
+    sys.exit()
+
 # convert selected sessions to re to match
 # value pattern: [court index][session index]
 res = []
-for session in settings['sessions']:
-    res.append(re.compile('\d' + str(sessions.index(session))))
+for session in sessions:
+    res.append(re.compile('\d' + str(sessions_available.index(session))))
 
 
 def wait_until_midnight():
